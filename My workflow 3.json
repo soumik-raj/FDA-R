@@ -1,0 +1,204 @@
+{
+  "name": "My workflow 3",
+  "nodes": [
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=You are an expert research assistant. Your task is to analyze the following academic paper abstract and provide a structured summary in JSON format.\n\nDo not include any text outside of the final JSON object.\n\nPaper Title: \"{{ $json.body.title }}\"\nPaper Abstract: \"{{ $json.body.summary }}\"\n\nBased on the information above, generate a JSON object with the following keys:\n- \"summary\": A concise, one-paragraph summary of the paper's core contribution.\n- \"key_findings\": A bulleted list (as a single string with newlines `\\n- `) of the top 3 most important findings or results.\n- \"potential_applications\": A brief description of the potential real-world applications or implications of this research.\n\nJSON Response:"
+            }
+          ]
+        },
+        "jsonOutput": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        -784,
+        16
+      ],
+      "id": "fb81d9a6-8d67-4d96-b600-b0335fe8020c",
+      "name": "Generate Summary",
+      "credentials": {
+        "openAiApi": {
+          "id": "DLUkmnLSEhUQHcag",
+          "name": "OpenAi account 4"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "89ec0eef-ba4b-4dd5-bafc-a29aae26bd72",
+              "name": "title",
+              "value": "={{ $('Webhook').item.json.body.title }}",
+              "type": "string"
+            },
+            {
+              "id": "28e38df0-5b80-44af-ad15-21fe67d4b1bd",
+              "name": "url",
+              "value": "={{ $('Webhook').item.json.body.id }}",
+              "type": "string"
+            },
+            {
+              "id": "a2cde676-e216-4c5f-9542-3c2af433601a",
+              "name": "authors",
+              "value": "={{ Array.isArray($('Webhook').item.json.body.author) ? $('Webhook').item.json.body.author.map(a => a.name).join(', ') : $('Webhook').item.json.body.author.name }}",
+              "type": "string"
+            },
+            {
+              "id": "cb4a81b6-e5e1-4167-987f-6613f03d6b78",
+              "name": "summary",
+              "value": "={{ $json.message.content.summary }}",
+              "type": "string"
+            },
+            {
+              "id": "8bc3a921-51e1-491e-befb-2150f4309543",
+              "name": "key_findings",
+              "value": "={{ $json.message.content.key_findings }}",
+              "type": "string"
+            },
+            {
+              "id": "61a68b18-b44c-4df0-8945-89859a079ff5",
+              "name": "potential_applications",
+              "value": "={{ $json.message.content.potential_applications }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -256,
+        32
+      ],
+      "id": "263599fc-3e0b-41c0-a9d3-0350a774e3a0",
+      "name": "Format for Notion"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "dba0f287-7be2-40b2-a8bb-30479f8a6604",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -1040,
+        16
+      ],
+      "id": "7d74f3cc-ab46-4e51-98ed-9b923648c2d9",
+      "name": "Webhook",
+      "webhookId": "dba0f287-7be2-40b2-a8bb-30479f8a6604"
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "databaseId": {
+          "__rl": true,
+          "value": "https://www.notion.so/24136741ad16802680d2ef207ad35fc0?v=24136741ad168014a457000c13c12e59&source=copy_link",
+          "mode": "url",
+          "__regex": "(?:https|http)://www\\.notion\\.so/(?:[a-z0-9-]{2,}/)?([0-9a-f]{8}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{12})"
+        },
+        "propertiesUi": {
+          "propertyValues": [
+            {
+              "key": "Authors|rich_text",
+              "textContent": "={{ $json.authors }}"
+            },
+            {
+              "key": "Title|title",
+              "title": "={{ $json.title }}"
+            },
+            {
+              "key": "Potential Findings|rich_text",
+              "textContent": "={{ $json.potential_applications }}"
+            },
+            {
+              "key": "Summary|rich_text",
+              "textContent": "={{ $json.summary }}"
+            },
+            {
+              "key": "URL|url",
+              "urlValue": "={{ $json.url }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        -48,
+        32
+      ],
+      "id": "fc5a44e4-fd5a-4301-8740-c292920ea556",
+      "name": "Create a database page",
+      "credentials": {
+        "notionApi": {
+          "id": "scFfxSn1AzCsdnlI",
+          "name": "Notion account 3"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Generate Summary": {
+      "main": [
+        [
+          {
+            "node": "Format for Notion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format for Notion": {
+      "main": [
+        [
+          {
+            "node": "Create a database page",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Generate Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "74915ec9-da16-42c6-9bd0-8b22dfd625b4",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "dfdd6253b33a0cee3126f754c684bad5317b1ea26533609513ac2269b560a128"
+  },
+  "id": "Jp2HHMm6ZIiGHi0F",
+  "tags": []
+}

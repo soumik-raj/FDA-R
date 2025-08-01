@@ -1,0 +1,171 @@
+{
+  "name": "My workflow 2",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "ba3a50cc-f6a0-42a0-99c2-5aa60dd1760a",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c62f9a0b-f1cf-4a36-a155-6df0c15d6532",
+              "name": "topic",
+              "value": "large language model reasoning",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        208,
+        0
+      ],
+      "id": "3729d35d-4bbe-4a99-b8a0-9d68a21aaf4b",
+      "name": "Define Topic"
+    },
+    {
+      "parameters": {
+        "url": "=http://export.arxiv.org/api/query?search_query=all:{{ $json.topic.replace(' ', '+') }}&sortBy=relevance&sortOrder=descending&max_results=5",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        416,
+        0
+      ],
+      "id": "1fbf44db-4df0-409c-8eb0-55ceb3aae7dc",
+      "name": "Query ArXiv"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.xml",
+      "typeVersion": 1,
+      "position": [
+        624,
+        0
+      ],
+      "id": "b3417032-62bc-4e01-b903-aaba14ad0a3d",
+      "name": "XML"
+    },
+    {
+      "parameters": {
+        "jsCode": "\nconst item = $input.item;\n\nconst papers = item.json.feed.entry;\n\nreturn papers.map(paper => ({ json: paper }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        832,
+        0
+      ],
+      "id": "75e649b8-f145-4b8d-9188-9bd2a023cf60",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://soumik-raj07.app.n8n.cloud/webhook-test/dba0f287-7be2-40b2-a8bb-30479f8a6604",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1040,
+        0
+      ],
+      "id": "c4369306-d968-4ac3-8de0-14f17e9bb9cc",
+      "name": "HTTP Request"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Define Topic",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Define Topic": {
+      "main": [
+        [
+          {
+            "node": "Query ArXiv",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Query ArXiv": {
+      "main": [
+        [
+          {
+            "node": "XML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "XML": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "d0acbe8c-f605-45d5-83ea-ae9b3a159348",
+  "meta": {
+    "instanceId": "dfdd6253b33a0cee3126f754c684bad5317b1ea26533609513ac2269b560a128"
+  },
+  "id": "Ic6BkWkk9hpC3q9R",
+  "tags": []
+}
